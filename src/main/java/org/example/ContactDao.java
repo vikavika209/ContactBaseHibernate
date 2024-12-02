@@ -4,14 +4,16 @@ import jakarta.persistence.EntityNotFoundException;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-
 import java.util.List;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 @Repository
 public class ContactDao {
 
     private final SessionFactory sessionFactory;
+    private final Logger logger = LoggerFactory.getLogger(ContactDao.class);
 
     @Autowired
     public ContactDao(SessionFactory sessionFactory) {
@@ -57,14 +59,14 @@ public class ContactDao {
                 }
                 transaction.commit();
             }catch (Exception e){
-                throw new RuntimeException("Произошла ошибка", e);
+                logger.error("The contact with id {} hasn't been updated", id, e);
             }
         }
     }
     public void deleteContact(long id){
         try(var session = sessionFactory.openSession()){
             var transaction = session.beginTransaction();
-            var contact = getContact(id);
+            Contact contact = session.get(Contact.class, id);
             if(contact != null){
                 session.delete(contact);
             }
